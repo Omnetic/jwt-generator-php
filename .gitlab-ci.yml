@@ -1,0 +1,67 @@
+# GitLab CI for omnetic-jwt-generator-php.
+#
+# Mirrors the Makefile targets (test / stan / cs) on the dev/test PHP version.
+# The library floor is PHP 8.2+, but CI exercises 8.4 only (the pinned dev
+# image) — the multi-version compatibility matrix is intentionally not run here.
+
+stages:
+  - prepare
+  - quality
+
+default:
+  image: php:8.4-cli-alpine
+
+variables:
+  COMPOSER_ALLOW_SUPERUSER: "1"
+  COMPOSER_CACHE_DIR: "$CI_PROJECT_DIR/.composer-cache"
+
+# Run on merge requests, the default branch, and tags — while avoiding a
+# duplicate pipeline when a branch already has an open merge request.
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+# Install Composer dependencies once, then hand vendor/ to the quality jobs.
+# composer.lock is git-ignored (library convention), so the cache keys on
+# composer.json — git + unzip mirror the Dockerfile's setup.
+composer:
+  stage: prepare
+  before_script:
+    - apk add --no-cache git unzip
+    - wget -qO /usr/local/bin/composer https://getcomposer.org/download/latest-2.x/composer.phar
+    - chmod +x /usr/local/bin/composer
+  script:
+    - composer install --no-interaction --no-progress --prefer-dist
+  cache:
+    key:
+      files:
+        - composer.json
+    paths:
+      - .composer-cache/
+  artifacts:
+    paths:
+      - vendor/
+    expire_in: 1 hour
+
+# The quality jobs need only PHP + the installed vendor/ — no Composer, git or
+# unzip — so they run straight off the artifact in parallel.
+test:
+  stage: quality
+  needs: ["composer"]
+  script:
+    - vendor/bin/phpunit
+
+stan:
+  stage: quality
+  needs: ["composer"]
+  script:
+    # PHPStan's parallel workers need more than the image's 128M default.
+    - vendor/bin/phpstan analyse --no-progress --memory-limit=512M
+
+cs:
+  stage: quality
+  needs: ["composer"]
+  script:
+    - vendor/bin/ecs check

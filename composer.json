@@ -1,0 +1,37 @@
+{
+    "name": "omnetic/jwt-generator",
+    "description": "Generate signed RS256 JWT tokens for authenticating Omnetic DMS Service Account requests.",
+    "type": "library",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.2",
+        "ext-openssl": "*",
+        "firebase/php-jwt": "^7.0"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^12.0",
+        "slevomat/coding-standard": "^8.18",
+        "squizlabs/php_codesniffer": "^3.13",
+        "symplify/easy-coding-standard": "^12.6"
+    },
+    "suggest": {
+        "ext-curl": "Only needed by examples/call-dms-api.php, not by the SDK itself"
+    },
+    "autoload": {
+        "psr-4": {
+            "Omnetic\\JwtGenerator\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Omnetic\\JwtGenerator\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "sort-packages": true
+    }
+}

@@ -1,0 +1,5 @@
+/vendor/
+*.pem
+/composer.lock
+/.phpunit.cache/
+/.phpunit.result.cache

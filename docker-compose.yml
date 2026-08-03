@@ -1,0 +1,16 @@
+services:
+  php:
+    build:
+      context: .
+    working_dir: /app
+    # Optional argument fallbacks for the examples; unset host vars stay unset.
+    environment:
+      - OMNETIC_SA_KEY_PATH
+      - OMNETIC_SA_KID
+      - OMNETIC_DMS_API_URL
+    volumes:
+      - .:/app
+      - composer-cache:/tmp/composer-cache
+
+volumes:
+  composer-cache:
